@@ -1,8 +1,8 @@
 import zerorpc
 import sys
+import threading
 
-clientNapster = zerorpc.Client()
-clientNapster.connect('tcp://localhost:4242')
+myAddress = 'tcp://localhost:4244'
 
 class NapsterClient(object):
 
@@ -48,31 +48,44 @@ def main():
 		    break
 		else:
 			search = 'tosend.mp3'
+			clientNapster = zerorpc.Client()
+			clientNapster.connect('tcp://localhost:4242')
 			size, address = clientNapster.search(search)
-			if (len(address) == 1):
-				client = zerorpc.Client()
-				client.connect(address[0])
-				song = client.download(search)
-				with open('Descargas/torecv.mp3', 'wb') as file:
-					for data in song:
-						file.write(data)
-					print 'Descarga Terminada'
-			else:
-				parts = len(address)
-				with open("Descargas/torecv.mp3", "wb") as file:
-					for x in xrange(len(address)):
-						sequential = x+1 
-						client = zerorpc.Client()
-						client.connect(address[x])
-						songPart = client.download(search, parts, size, sequential)
-						print sys.getsizeof(songPart)
-						for data in songPart:
+			for x in address:
+				if (x == myAddress):
+					address.remove(x)
+			if (len(address) != 0):	
+				if (len(address) == 1):
+					client = zerorpc.Client()
+					client.connect(address[0])
+					song = client.download(search)
+					with open('Descargas2/torecv.mp3', 'wb') as file:
+						for data in song:
 							file.write(data)
-						print x+1, ' Parte Descargada'
-			
-if __name__ == '__main__':
-	#main()
+						print 'Descarga Terminada'
+				else:
+					parts = len(address)
+					with open("Descargas2/torecv.mp3", "wb") as file:
+						for x in xrange(len(address)):
+							sequential = x+1 
+							client = zerorpc.Client()
+							client.connect(address[x])
+							songPart = client.download(search, parts, size, sequential)
+							print sys.getsizeof(songPart)
+							for data in songPart:
+								file.write(data)
+							print x+1, ' Parte Descargada'
+			else:
+				'No Hay Descarga'
+
+def serverNapsterClient():
 	serverClient = zerorpc.Server(NapsterClient())
 	serverClient.bind("tcp://0.0.0.0:4244")
 	serverClient.run()
+		
+if __name__ == '__main__':
+	execute = threading.Thread(target=main)
+	execute.start()
+	server = threading.Thread(target=serverNapsterClient)
+	server.start()
 	

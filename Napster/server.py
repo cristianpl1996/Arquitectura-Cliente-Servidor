@@ -4,7 +4,7 @@ class Napster(object):
 
 	def __init__(self):
 		self.uri = ''
-		self.db = [['tosend.mp3', 6357801, ['tcp://localhost:4245']]]
+		self.db = [['tosend.mp3', 6357801, ['tcp://localhost:4243', 'tcp://localhost:4244', 'tcp://localhost:4245']]]
 
 	def search(self, search):
 		for x in self.db:
