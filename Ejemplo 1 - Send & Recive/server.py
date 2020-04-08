@@ -4,6 +4,13 @@
 # 11Sep
  
 import socket
+import eyed3
+
+#Cargando metadatos de los archivos
+audio = eyed3.load("Descargas/torecv.mp3")
+print(audio.tag.artist)
+print(audio.tag.album)
+print(audio.tag.title)
  
 # Creamos una lista con los datos del la conexión
 CONEXION = (socket.gethostname(), 9001)
@@ -13,15 +20,15 @@ servidor = socket.socket()
 # Ponemos el servidor a la escucha
 servidor.bind(CONEXION)
 servidor.listen(5)
-print "Escuchando {0} en {1}".format(*CONEXION)
+print("Escuchando {0} en {1}".format(*CONEXION))
 # Aceptamos conexiones
 sck, addr = servidor.accept()
-print "Conectado a: {0}:{1}".format(*addr)
+print ("Conectado a: {0}:{1}".format(*addr))
 while True:
     # Recibimos la longitud que envia el cliente
     recibido = sck.recv(1024).strip()
     if recibido:
-        print "Recibido:", recibido
+        print("Recibido:"), recibido
     # Verificamos que lo que recibimos sea un número
     # en caso que así sea, enviamos el mensaje "OK"
     # al cliente indicandole que estamos listos
@@ -48,7 +55,7 @@ while True:
                 buffer += 1
             
             if buffer == int(recibido):
-                print "Archivo descargado con éxito"
+                print ("Archivo descargado con éxito")
             else:
-                print "Ocurrió un error/Archivo incompleto"
+                print ("Ocurrió un error/Archivo incompleto")
         break              

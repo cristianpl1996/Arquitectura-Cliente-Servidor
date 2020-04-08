@@ -25,7 +25,7 @@ class NapsterClient(object):
 			cuttingSize = size / parts
 			rangeEnd = cuttingSize * sequential
 			rangeStart = rangeEnd - cuttingSize
-			x = 0;
+			x = 0
 			with open('dir/temp', 'wb') as file:
 				for data in song:
 					if ((x >= rangeStart) and (x <= rangeEnd)):
