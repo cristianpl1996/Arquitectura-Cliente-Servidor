@@ -19,8 +19,11 @@ class NapsterClient(object):
 			audio = eyed3.load(os.path.join(self.dir,archivo))
 			with open(os.path.join(self.dir,archivo), 'rb') as file:
 				song = file.read()
-			PLAYLIST.append({"Address": myAddress,"Titulo": audio.tag.title,
-							 "Artista": audio.tag.artist, "Album": audio.tag.album, "Tamano": sys.getsizeof(song)})
+			PLAYLIST.append({"Address": myAddress,
+							 "Titulo": audio.tag.title,
+							 "Artista": audio.tag.artist,
+							 "Album": audio.tag.album,
+							 "Tamano": sys.getsizeof(song)})
 			if os.path.isdir(os.path.join(self.dir,archivo)):
 				__init__(os.path.join(self.dir,archivo))
 	
@@ -31,11 +34,11 @@ class NapsterClient(object):
 
 	def download(self, search, parts = 1, size = 0, sequential = 0):
 		if (parts == 1):
-			self.uri = 'Lista/' + search
+			self.uri = 'Lista1/' + search
 			song, size = self.importSong(self.uri)
 			return song
 		else:
-			self.uri = 'Lista/' + search
+			self.uri = 'Lista1/' + search
 			song, size = self.importSong(self.uri)
 			cuttingSize = size / parts
 			rangeEnd = cuttingSize * sequential
@@ -96,9 +99,10 @@ def main():
 
 def serverNapsterClient():
 	serverClient = zerorpc.Server(NapsterClient())
-	serverClient.getplaylist()
 	serverClient.bind('tcp://0.0.0.0:4243')
+	c = NapsterClient().getplaylist()
 	serverClient.run()
+	
 	
 if __name__ == '__main__':
 	execute = threading.Thread(target=main)

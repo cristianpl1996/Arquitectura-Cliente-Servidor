@@ -23,3 +23,5 @@ class Napster(object):
 server = zerorpc.Server(Napster())
 server.bind('tcp://0.0.0.0:4242')
 server.run()
+
+#https://medium.com/@MicroPyramid/mongodb-crud-operations-with-python-pymongo-a26883af4d09
