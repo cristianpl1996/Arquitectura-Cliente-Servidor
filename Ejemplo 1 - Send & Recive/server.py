@@ -4,13 +4,7 @@
 # 11Sep
  
 import socket
-import eyed3
 
-#Cargando metadatos de los archivos
-audio = eyed3.load("Descargas/torecv.mp3")
-print(audio.tag.artist)
-print(audio.tag.album)
-print(audio.tag.title)
  
 # Creamos una lista con los datos del la conexión
 CONEXION = (socket.gethostname(), 9001)
