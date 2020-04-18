@@ -23,6 +23,7 @@ class NapsterClient(object):
 	def importSong(self, uri):
 		with open(uri, 'rb') as file:
 			song = file.read()
+			file.close()
 		return song, sys.getsizeof(song)	
 
 	def download(self, search, parts = 1, size = 0, sequential = 0):
@@ -41,7 +42,8 @@ class NapsterClient(object):
 				for data in song:
 					if ((x >= rangeStart) and (x <= rangeEnd)):
 						file.write(data)
-					x += 1								
+					x += 1
+				file.close()								
 			songPart, size = self.importSong('dir/temp')
 			return songPart
 
@@ -70,10 +72,10 @@ def main():
 	frame.place(x = 40, y = 275)
 	canvas = Canvas(frame, bg = 'white', width = 603, height = 150)
 	canvas.pack(side = 'left', fill = 'both')
-	scrollbar = Scrollbar(frame, orient = 'vertical', command=canvas.yview)
+	scrollbar = Scrollbar(frame, orient = 'vertical', command = canvas.yview)
 	scrollbar.pack(side = 'right', fill = 'y')
 	scrollable_frame = Frame(canvas, width = 601, height = 150)
-	scrollable_frame.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+	scrollable_frame.bind('<Configure>', lambda e: canvas.configure(scrollregion = canvas.bbox("all")))
 	canvas.create_window((0, 0), window = scrollable_frame, anchor = "nw")
 	canvas.configure(yscrollcommand = scrollbar.set)
 	col = Button(root, width = 15, text = 'Canción', state = 'disable')
@@ -127,11 +129,9 @@ def main():
 	def deleteDict():
 		inputDict = {}
 		
-	def download(pos, search, size, address):
+	def download(search, size, address):
 		pygame.mixer.quit()
 		pygame.quit()
-		format = inputDict[pos - 1].get()
-		client = inputDict[pos - 2].get()
 		if (len(address) == 1):
 			client = zerorpc.Client()
 			client.connect(address[0])
@@ -140,6 +140,7 @@ def main():
 				for data in song:
 					file.write(data)
 				print 'Descarga Terminada'
+				file.close()
 		else:
 			parts = len(address)
 			with open('Descargas/' + search, 'wb') as file:
@@ -152,7 +153,18 @@ def main():
 					for data in songPart:
 						file.write(data)
 					print x+1, ' Parte Descargada'
+				print 'Descarga Terminada'
+				file.close()
 		createChildRoot(search, 'Descargas/' + search)
+
+	def downloadAlbum(songs):
+		pygame.mixer.quit()
+		pygame.quit()
+		for x in songs:
+			search = x[0],
+			size = x[3], 
+			address = x[4]
+			download(search[0], size[0], address)
 
 	def search():
 		global addressServer
@@ -161,49 +173,54 @@ def main():
 		if len(search) == 0:
 			tkMessageBox.showerror('Información ©', 'Digite busqueda a realizar.')
 		else:
-			filter = combo.get()
-			if (filter == 'Cancion'):
-				filterSearch = search + '.mp3'
 			try:
+				filter = combo.get()
+				if (filter == 'Cancion'):
+					search = search + '.mp3'
 				clientNapster = zerorpc.Client()
 				clientNapster.connect(addressServer)
-				name, artist, album, size, address = clientNapster.search(filter, filterSearch)
-				if ((name == 0) and (artist == 0) and (album == 0) and (size == 0) and (address == 0)):
-					tkMessageBox.showerror('Información ©', 'No se han encontrado resultados para tu búsqueda(' + search + ').')
-				else:
-					for x in address:
-						if (x == myAddress):
-							address.remove(x)
+				songs = clientNapster.search(filter, search)
+				if (len(songs) > 0):
+					for x in songs:
+						for y in x[4]:
+							if (y == myAddress):
+								x[4].remove(y)
 					
 					canvasBoxChild = Canvas(canvasBox, bg = 'white', width = 1000, height = 2000)
 					canvasBoxChild.place(x=0, y=0)
-					i, y = 0, 2
-					if (len(address) != 0):
-						inputDict[1] = Entry(canvasBoxChild, width = 15)
-						inputDict[1].place(x = 2, y = y)
-						inputDict[1].insert(0, name)
-						inputDict[1].config(state="readonly")
-						inputDict[2] = Entry(canvasBoxChild, width = 15)
-						inputDict[2].place(x = 102, y = y)
-						inputDict[2].insert(0, artist)
-						inputDict[2].config(state="readonly")
-						inputDict[3] = Entry(canvasBoxChild, width = 15)
-						inputDict[3].place(x = 202, y = y)
-						inputDict[3].insert(0, album)
-						inputDict[3].config(state="readonly")
-						inputDict[4] = Entry(canvasBoxChild, width = 15)
-						inputDict[4].place(x = 302, y = y)
-						inputDict[4].insert(0, size)
-						inputDict[4].config(state="readonly")
-						inputDict[5] = Entry(canvasBoxChild, width = 15)
-						inputDict[5].place(x = 402, y = y)
-						inputDict[5].insert(0, 'Clientes: ' + str(len(address)))
-						inputDict[5].config(state="readonly")
-						inputDict[6] = Button(canvasBoxChild, width = 15, text = 'Descargar', command = lambda pos = 6, search =  filterSearch, size =  size, addres =  address : download(pos, search, size, address))
-						inputDict[6].place(x = 502, y = y-2)
-					else:
-						tkMessageBox.showerror('Información ©', 'No hay descarga.')	
-					txt.delete(0, END)
+					i, y = 1, 2
+					for x in songs:
+						if (len(x[4]) != 0):
+							inputDict[i] = Entry(canvasBoxChild, width = 15)
+							inputDict[i].place(x = 2, y = y)
+							inputDict[i].insert(0, x[0])
+							inputDict[i].config(state="readonly")
+							inputDict[i+1] = Entry(canvasBoxChild, width = 15)
+							inputDict[i+1].place(x = 102, y = y)
+							inputDict[i+1].insert(0, x[1])
+							inputDict[i+1].config(state="readonly")
+							inputDict[i+2] = Entry(canvasBoxChild, width = 15)
+							inputDict[i+2].place(x = 202, y = y)
+							inputDict[i+2].insert(0, x[2])
+							inputDict[i+2].config(state="readonly")
+							inputDict[i+3] = Entry(canvasBoxChild, width = 15)
+							inputDict[i+3].place(x = 302, y = y)
+							inputDict[i+3].insert(0, x[3])
+							inputDict[i+3].config(state="readonly")
+							inputDict[i+4] = Entry(canvasBoxChild, width = 15)
+							inputDict[i+4].place(x = 402, y = y)
+							inputDict[i+4].insert(0, 'Clientes: ' + str(len(x[4])))
+							inputDict[i+4].config(state="readonly")
+							inputDict[i+5] = Button(canvasBoxChild, width = 15, text = 'Descargar', command = lambda search = x[0], size =  x[3], address =  x[4] : download(search, size, address))
+							inputDict[i+5].place(x = 502, y = y-2)
+							i+=6
+							y+=25
+					if (filter == 'Album'):
+						albumDownload = Button(canvasBoxChild, width = 98, text = 'Descargar Album', command = lambda songs = songs: downloadAlbum(songs))
+						albumDownload.place(x = 3, y = y-2)
+				else:
+					tkMessageBox.showerror('Información ©', 'No se han encontrado resultados para tu búsqueda(' + search + ').')		
+				txt.delete(0, END)
 			except zerorpc.exceptions.LostRemote as e:
 				addressServer = addressServers[1]
 				tkMessageBox.showerror('Información ©', 'Tuvimos un error intentalo de nuevo.')
@@ -213,7 +230,7 @@ def main():
 	root.mainloop()
 
 if __name__ == '__main__':
-	execute = threading.Thread(target=main)
+	execute = threading.Thread(target = main)
 	execute.start()
-	server = threading.Thread(target=serverNapsterClient)
+	server = threading.Thread(target = serverNapsterClient)
 	server.start()
