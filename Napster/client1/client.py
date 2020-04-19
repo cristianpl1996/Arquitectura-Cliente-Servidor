@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from mutagen.easyid3 import EasyID3
 from Tkinter import *
 from ttk import *
-import tkMessageBox
-import zerorpc
-import sys
-import threading
-import pygame
+import tkMessageBox, zerorpc, sys, os, threading, pygame
 
 inputDict = {}
 addressServers = ['tcp://localhost:4241', 'tcp://localhost:4242']
@@ -46,6 +43,22 @@ class NapsterClient(object):
 				file.close()								
 			songPart, size = self.importSong('dir/temp')
 			return songPart
+
+def getPlayList(dir = 'Lista'):
+	playList = []
+	for archivo in os.listdir(dir):
+		tags = EasyID3(os.path.join(dir, archivo))
+		with open(os.path.join(dir, archivo), 'rb') as file:
+			song = file.read()
+			playList.append([myAddress, str(tags["title"][0]), str(tags["artist"][0]), str(tags["album"][0]), sys.getsizeof(song)])
+	return playList
+
+def setPlayList():
+	global addressServer
+	playList = getPlayList()
+	client = zerorpc.Client()
+	client.connect(addressServer)
+	client.setPlayList(playList)   
 
 def serverNapsterClient():
 	serverClient = zerorpc.Server(NapsterClient())
@@ -230,6 +243,7 @@ def main():
 	root.mainloop()
 
 if __name__ == '__main__':
+	setPlayList()
 	execute = threading.Thread(target = main)
 	execute.start()
 	server = threading.Thread(target = serverNapsterClient)

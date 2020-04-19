@@ -13,6 +13,9 @@ class Napster(object):
                    ['thriller.mp3', 'Michael Jackson', 'Thriller', 7077184, ['tcp://localhost:4243', 'tcp://localhost:4245']],
 				   ['fantasias.mp3', 'Lenny Tabarez', '', 8600150, ['tcp://localhost:4243', 'tcp://localhost:4244', 'tcp://localhost:4245']]]
 
+	def setPlayList(self, playList):
+		print playList
+		
 	def search(self, filter, search):
 		songs = []
 		for x in self.db:
