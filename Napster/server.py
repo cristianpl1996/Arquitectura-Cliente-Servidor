@@ -11,6 +11,7 @@ class Napster(object):
 		self.client = MongoClient('localhost',27017) 
 		self.db = self.client.Napster
 		self.collection = self.db.Songs
+		self.collection.drop()
 	
 	def setPlayList(self, playList):
 		L = []
@@ -32,7 +33,8 @@ class Napster(object):
 						item = self.collection.find_one({k:v})
 						for j in item['puertos']:
 							puertos.append(str(j))
-						aux = dict([('puertos',puertos),('titulo',str(item['titulo'])),('artista',str(item['artista'])),('album',str(item['album'])),('tamano',int(item['tamano']))])
+						mj2 = list(set(puertos))
+						aux = dict([('puertos',mj2),('titulo',str(item['titulo'])),('artista',str(item['artista'])),('album',str(item['album'])),('tamano',int(item['tamano']))])
 						self.collection.remove({k:v})
 						self.collection.insert(aux)	
 					else:
