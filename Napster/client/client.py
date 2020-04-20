@@ -188,11 +188,12 @@ def main():
 		else:
 			try:
 				filter = combo.get()
-				if (filter == 'Cancion'):
-					search = search + '.mp3'
+				#if (filter == 'Cancion'):
+				#	search = search + '.mp3'
 				clientNapster = zerorpc.Client()
 				clientNapster.connect(addressServer)
 				songs = clientNapster.search(filter, search)
+				print 'songs: ', songs
 				if (len(songs) > 0):
 					for x in songs:
 						for y in x[4]:
