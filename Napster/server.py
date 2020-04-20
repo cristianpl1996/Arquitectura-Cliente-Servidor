@@ -1,5 +1,5 @@
 import zerorpc
-import pymongo
+from pymongo import MongoClient 
 
 
 
@@ -9,35 +9,56 @@ class Napster(object):
 	def __init__(self):
 		self.uri = ''
 		self.client = MongoClient('localhost',27017) 
-		self.db = self.client.Napster()
-		self.collection = db.Songs
-
+		self.db = self.client.Napster
+		self.collection = self.db.Songs
+	
 	def setPlayList(self, playList):
 		L = []
+	
 		for i in playList:
-			L.append(dict([('titulo',i[0]),('autor',i[1]),('album',i[2]),('tamano',i[3]),('puertos',i[4])]))
+			aux = []
+			aux.append(i[0])
+			L.append(dict([('puertos',aux),('titulo',i[1]),('artista',i[2]),('album',i[3]),('tamano',i[4])]))
 
 		for i in L:
+			lista = []
 			for k,v in i.iteritems():
-				if self.collection.find_one({k:v}):
-					print 'Cancion encontrada'
-				else:
-					print 'Cancion no encontrada'
-					
-				
+				if k == 'titulo':
+					if self.collection.find_one({k:v}):
+						for k,v in i.iteritems():
+							if k == 'puertos':
+								print lista
+								lista.append(str(v)) #puerto nuevo
+								print lista
+								for k,v in i.iteritems():
+									if k == 'titulo':
+										item = self.collection.find_one({k:v})
+										lista.append(str(item['puertos']))
+										print lista
+										#self.collection.update_one({k,v},{'$set':{'puertos':lista}})
+										break
+									break
+							break
+					else:
+						print 'guardado: ', self.collection.insert(i)
+						break
+	
 	def search(self, filter, search):
 		songs = []
-		for x in self.db:
-			if (filter == 'Cancion'):
-				if (x[0] == search):
-					songs.append(x)	
-			elif (filter == 'Artista'):
-				if (x[1] == search):
-					songs.append(x)
-			elif (filter == 'Album'):
-				if (x[2] == search):
-					songs.append(x)	
-		return songs	
+		"""
+		if (filter == 'Cancion'):
+			if (x[0] == search):
+
+				songs.append(x)	
+		elif (filter == 'Artista'):
+			if (x[1] == search):
+				songs.append(x)
+		elif (filter == 'Album'):
+			if (x[2] == search):
+				songs.append(x)
+		"""			
+		return songs
+		
 
 server = zerorpc.Server(Napster())
 server.bind('tcp://0.0.0.0:4241')
